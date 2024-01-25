@@ -7,4 +7,6 @@ const Map<String, dynamic> defaultMetadata = {
   'theme': 'RED',
 };
 
-Map<String, dynamic> metadata = {};
+Map<String, dynamic> _metadata = {};
+Map<String, dynamic> get metadata => _metadata;
+set metadata(Map<String, dynamic> data) => _metadata = data;

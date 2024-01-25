@@ -21,7 +21,7 @@ bool isLite = true;
 
 void main() async {
   await initialize();
-  runApp(ThemedWidget(widget: const MyApp(), theme: theme,));
+  runApp(ThemedWidget(widget: const QuizFlip(), theme: theme,));
 }//e main()
 
 /// This function initializes anything variables, like the hive box, that will be needed later on.
@@ -38,6 +38,8 @@ Future<void> initialize() async {
   Aspect.aspectWidth = 3;
   Aspect.aspectHeight = 4;
   // Initialize hive box.
+
+  metadata = await loadMetadata();
 
   List<Flashcard> savedCards = await loadCards();
   
@@ -76,20 +78,10 @@ Future<void> initialize() async {
   Flashcard.setFilter([]);
 }//e initialize()
 
-/// Stores data for all the page routes.
-// Map<String, List<dynamic>> pageRoutes = {
-//   'home': ['/', HomePage(title: getLang('title'))],
-//   'review': ['/review/', ReviewPage(title: getLang('reviewPage'))],
-//   'reviewComplete': ['/review/complete/', ReviewCompletePage(title: getLang('reviewCompletePage'))],
-//   'practice': ['/practice/', PracticePage(title: getLang('practicePage'))],
-//   'multichoice': ['/multichoice/', MultiChoicePage(title: getLang('multichoicePage'))],
-//   'multichoiceResult': ['/multichoice/result/', MultiChoiceResultPage(title: getLang('multichoiceResultPage'))],
-// };
-
-/// MyApp
+/// [QuizFlip]
 /// The app :)
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class QuizFlip extends StatelessWidget {
+  const QuizFlip({super.key});
 
   // This widget is the root of your application.
   @override
