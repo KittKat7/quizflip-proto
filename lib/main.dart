@@ -1,9 +1,93 @@
+import 'package:kkfl_lang/kkfl_lang.dart';
+import 'package:kkfl_theming/kkfl_theming.dart';
+import 'package:kkfl_widgets/kkfl_widgets.dart';
+
+import '/inout.dart';
+import '/metadata.dart';
+import '/update.dart';
+import 'package:flutter/services.dart';
+
+import 'widgets.dart';
 import 'package:flutter/material.dart';
+import 'flashcard.dart';
+import './lang/en_us.dart' as en_us;
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+const String updateTimeStamp = String.fromEnvironment('buildTimeUTC', defaultValue: 'N/A');
 
+AppTheme theme = AppTheme();
+
+bool isLite = true;
+
+void main() async {
+  await initialize();
+  runApp(ThemedWidget(widget: const MyApp(), theme: theme,));
+}//e main()
+
+/// This function initializes anything variables, like the hive box, that will be needed later on.
+Future<void> initialize() async {
+  SharedPreferences.setPrefix('quizflip-');
+  prefs = await SharedPreferences.getInstance();
+  
+  // Initialize app version.
+  setAppVersion(2024011300);
+
+  // set language
+  setLangMap(en_us.getLang);
+  // Set aspect ratio
+  Aspect.aspectWidth = 3;
+  Aspect.aspectHeight = 4;
+  // Initialize hive box.
+
+  List<Flashcard> savedCards = await loadCards();
+  
+  // If there are no prexisting cards, or something was saved incorrectly and not saved as a String,
+  // create the list of introduction flashcards.
+  if (savedCards.isEmpty) {
+    // List of new flashcards to be added.
+    List<Flashcard> newCards = [
+      // Flashcard for how to make a new card.
+      Flashcard(
+        key: getLang('introcard_how_to_new_card'),
+        deck: '/introduction/',
+        values: [getLang('introcard_how_to_new_card_answer')],
+      ),
+      // Flashcard for how to sort cards.
+      Flashcard(
+        key: getLang('introcard_how_to_sort_cards'),
+        deck: '/introduction/',
+        values: [getLang('introcard_how_to_sort_cards_answer')],
+      ),
+      // Flashcard for how to practice the flashcards.
+      Flashcard(
+        key: getLang('introcard_how_to_practice'),
+        deck: '/introduction/',
+        values: [getLang('introcard_how_to_practice_answer')],
+      ),
+    ];//e newCards
+    
+    // Save flashcards.
+    saveCards(newCards);
+  }//e if
+  
+  Flashcard.cards = await loadCards();
+
+  // Initialize the filter to be empty.
+  Flashcard.setFilter([]);
+}//e initialize()
+
+/// Stores data for all the page routes.
+// Map<String, List<dynamic>> pageRoutes = {
+//   'home': ['/', HomePage(title: getLang('title'))],
+//   'review': ['/review/', ReviewPage(title: getLang('reviewPage'))],
+//   'reviewComplete': ['/review/complete/', ReviewCompletePage(title: getLang('reviewCompletePage'))],
+//   'practice': ['/practice/', PracticePage(title: getLang('practicePage'))],
+//   'multichoice': ['/multichoice/', MultiChoicePage(title: getLang('multichoicePage'))],
+//   'multichoiceResult': ['/multichoice/result/', MultiChoiceResultPage(title: getLang('multichoiceResultPage'))],
+// };
+
+/// MyApp
+/// The app :)
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -11,115 +95,114 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      title: getLang('title'),
+      theme: theme.getThemeDataLight(context),
+      darkTheme: theme.getThemeDataDark(context),
+      // darkTheme: theme.getDarkTheme(context),
+      themeMode: theme.getThemeMode(context),
+      home: const HomePage(title: ""),
+      // routes: genRoutes(pageRoutes),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
+class HomePage extends StatefulWidget {
+  const HomePage({super.key, required this.title});
 
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+    // The drawer to be displayed on the overview page.
+    Drawer drawer = Drawer(
+      child: ListView(
+        padding: const EdgeInsets.only(top: 20),
+        children: [
+          Align(alignment: Alignment.center, child: SimpleText(
+            getLang('header_settings_drawer', [updateTimeStamp]),
+            isBold: true,)),
+          const Divider(),
+          // Import export buttons.
+          // Export JSON
+          ElevatedButton(
+            onPressed: () => importCardsJson(context, () => setState(() => Flashcard.setFilter(null))),
+            child: Marked(getLang('btn_import_json'))),
+          ElevatedButton(
+            onPressed: () => exportCardsJson(metadata, Flashcard.filteredCards),
+            child: Marked(getLang('btn_export_json'))),
+          const Divider(),
+          // Theme settings buttons.
+          ElevatedButton(
+            onPressed: () => themeModePopup(context),
+            child: Marked(getLang('btn_theme_brightness_menu'))),
+          ElevatedButton(
+            // onPressed: () => getColorTheme(context).cycleColor(),
+            onPressed: () => themeColorPopup(context, theme),
+            child: Marked(getLang('btn_theme_color_menu')))
+        ]
+      )
+    );
+
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (p0) { 
+        if (Flashcard.filter.isNotEmpty) {
+          setState(() => Flashcard.popFilter());
+        } else {
+          confirmPopup(
+            context,
+            getLang('header_exit_app'),
+            getLang('msg_confirm_app_exit'),
+            () => SystemChannels.platform.invokeMethod('SystemNavigator.pop')
+          );
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: Builder(builder: (context) {
+            return IconButton(icon: const Icon(Icons.menu), onPressed: () { 
+              // Navigator.of(context).pushNamed(getRoute('settings'));
+              Scaffold.of(context).openDrawer(); 
+            });
+          }),
+          title: SimpleText(getLang('title'), isBold: true),
+          centerTitle: true,
+        ),
+        drawer: drawer,
+        body: Aspect(child: Padding(
+          padding: const EdgeInsets.only(top: 10),
+          child: SingleChildScrollView(child: Column(children: [
+            startBtns(),
+            deckBtns(Flashcard.filteredDecks, () => setState(() {})),
+            CardButtonColumn(cards: Flashcard.filteredCards, updateState: () => setState(() {})),
+            // cardBtns(Flashcard.filteredCards, context, () => setState(() {})),
+            const Text(""),
+          ]
+        )))),
+        floatingActionButton: FloatingActionButton(
+          // onPressed: () => createCardPopup(
+          //   context,
+          //   (p0, p1, p2, [p3]) {
+          //     Flashcard.newCard(p0, p1, p2, p3);
+          //     setState(() => Flashcard.setFilter(Flashcard.filter));
+          //   },
+          //   Flashcard.filter.join('/')
+          // ),
+          onPressed: () => flashcardWidgetPopup(
+            context: context,
+            superSetState: () => setState(() {}),
+            isEditing: true),
+          tooltip: getLang('tooltip_create_card'),
+          child: const Icon(Icons.add),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
