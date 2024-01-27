@@ -51,7 +51,7 @@ class _CardButtonState extends State<CardButton> {
   @override
   Widget build(BuildContext context) {
 
-    Color bgColor = isCardFlipped? Theme.of(context).colorScheme.primary : Theme.of(context).canvasColor;
+    Color bgColor = isCardFlipped? Theme.of(context).colorScheme.secondary : Theme.of(context).canvasColor;
 
     String tags = widget.card.deck;
     for (String tag in widget.card.tagsList) {

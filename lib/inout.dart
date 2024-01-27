@@ -1,10 +1,11 @@
 import 'dart:convert';
+import 'package:quizflip/inout_web.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kkfl_platform/kkfl_platform.dart';
 
-import 'inout/inout_desktop.dart';
-import 'inout/inout_mobile.dart';
-import 'inout/inout_web.dart';
+// import 'inout/inout_desktop.dart';
+// import 'inout/inout_mobile.dart';
+// import 'inout/inout_web.dart';
 import 'appdata.dart';
 import 'widgets.dart';
 
@@ -79,12 +80,12 @@ Future<void> exportCardsJson(Map<String, dynamic> metadata, List<Flashcard> card
 
   // Else if the app is running on a desktop platform, run the save method for desktop apps.
   else if (platformIsDesktop) {
-    pickWriteFileDesktop(content);
+    // pickWriteFileDesktop(content);
   }//e if desktop
 
   // Else if the app is running on a mobile platform, run the save method for mobile apps.
   else if (platformIsMobile) {
-    pickAndWriteToFileMobile('flashcards.json', content);
+    // pickAndWriteToFileMobile('flashcards.json', content);
   }//e if mobile
 }//e exportCardsJson()
 
@@ -111,13 +112,13 @@ Future<void> importCardsJson(context, Function() onLoadComplete) async {
   // Else if the app is running as a desktop app, run the desktop specific method to pick and read
   // from a file.
   else if (platformIsDesktop) {
-    contentString = await pickReadFileDesktop();
+    // contentString = await pickReadFileDesktop();
   }//e if desktop app
 
   // Else if the app is running as a mobile app, run the mobile specific method to pick and read
   // from a file.
   else if (platformIsMobile) {
-    contentString = await pickReadFileMobile();
+    // contentString = await pickReadFileMobile();
   }//e if mobile app
 
   // If [contentString] is null, then the pick file or read operation was canceled, possibly by the
