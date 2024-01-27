@@ -3,8 +3,7 @@ import 'package:kkfl_theming/kkfl_theming.dart';
 import 'package:kkfl_widgets/kkfl_widgets.dart';
 
 import '/inout.dart';
-import '/metadata.dart';
-import '/update.dart';
+import 'appdata.dart';
 import 'package:flutter/services.dart';
 
 import 'widgets.dart';
@@ -26,11 +25,10 @@ void main() async {
 
 /// This function initializes anything variables, like the hive box, that will be needed later on.
 Future<void> initialize() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
   SharedPreferences.setPrefix('quizflip-');
   prefs = await SharedPreferences.getInstance();
-  
-  // Initialize app version.
-  setAppVersion(2024011300);
 
   // set language
   setLangMap(en_us.getLang);
@@ -39,7 +37,7 @@ Future<void> initialize() async {
   Aspect.aspectHeight = 4;
   // Initialize hive box.
 
-  metadata = await loadMetadata();
+  appdata = await loadAppdata();
 
   List<Flashcard> savedCards = await loadCards();
   
@@ -127,7 +125,7 @@ class _HomePageState extends State<HomePage> {
             onPressed: () => importCardsJson(context, () => setState(() => Flashcard.setFilter(null))),
             child: Marked(getLang('btn_import_json'))),
           ElevatedButton(
-            onPressed: () => exportCardsJson(metadata, Flashcard.filteredCards),
+            onPressed: () => exportCardsJson(appdata, Flashcard.filteredCards),
             child: Marked(getLang('btn_export_json'))),
           const Divider(),
           // Theme settings buttons.

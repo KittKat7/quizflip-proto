@@ -5,41 +5,47 @@ import 'package:kkfl_platform/kkfl_platform.dart';
 import 'inout/inout_desktop.dart';
 import 'inout/inout_mobile.dart';
 import 'inout/inout_web.dart';
-import '/metadata.dart';
+import 'appdata.dart';
 import 'widgets.dart';
 
 import '/flashcard.dart';
-import '/update.dart';
 
 late SharedPreferences prefs;
 
-Future<Map<String, dynamic>> loadMetadata() async {
-    // String? contentString = await appFiles.readString('flashpaws.json');
-  String? content = prefs.getString('metadata.json');
+Future<Map<String, dynamic>> loadAppdata() async {
+    // String? contentString = await appFiles.readString('quizflip.json');
+  String? content = prefs.getString('appdata');
   // If [contentString] is null, then the pick file or read operation was canceled, possibly by the
   // user. In that case, return without attempting to import.
   if (content == null) return {'version': version};
 
-  metadata = json.decode(content);
+  appdata = json.decode(content);
 
-  return metadata;
+  return appdata;
 }
 
-void saveMetadata() {
+void saveAppdata() {
   // This is what will be writen to the file. Encode the metadata and cards into a map into json.
-  String content = json.encode(metadata);
-  // appFiles.writeString('flashpaws.json', content);
-  prefs.setString('metadata.json', content);
+  String content = json.encode(appdata);
+  // appFiles.writeString('quizflip.json', content);
+  prefs.setString('appdata', content);
 }
 
 Future<List<Flashcard>> loadCards() async {
-  // String? contentString = await appFiles.readString('flashpaws.json');
-  String? content = prefs.getString('flashcards.json');
+  // String? contentString = await appFiles.readString('quizflip.json');
+  String? content = prefs.getString('flashcards');
   // If [contentString] is null, then the pick file or read operation was canceled, possibly by the
   // user. In that case, return without attempting to import.
   if (content == null) return [];
 
-  List<dynamic> flashcardData = json.decode(content);
+  Map<String, dynamic> contentDecoded = json.decode(content);
+
+  Map<String, dynamic> metadata = contentDecoded['metadata'];
+
+  // TODO: version check
+  if (metadata['version'] != appdata['version']);
+
+  List<dynamic> flashcardData = contentDecoded['flashcards'];
 
   List<Flashcard> flashcards =
     [for (dynamic card in flashcardData) Flashcard.fromJson(card)];
@@ -50,9 +56,9 @@ Future<List<Flashcard>> loadCards() async {
 void saveCards([List<Flashcard>? cards]) {
   // This is what will be writen to the file. Encode the metadata and cards into a map into json.
   List<Flashcard> saveCards = cards??=Flashcard.cards;
-  String content = json.encode(saveCards);
-  // appFiles.writeString('flashpaws.json', content);
-  prefs.setString('flashcards.json', content);
+  String contentEncoded = json.encode({'metadata': {'version': version}, 'flashcards': saveCards});
+  // appFiles.writeString('quizflip.json', content);
+  prefs.setString('flashcards', contentEncoded);
 }
 
 
@@ -124,7 +130,7 @@ Future<void> importCardsJson(context, Function() onLoadComplete) async {
   Map<String, dynamic> metadata = content['metadata'];
 
   // Check to see if imported JSON is up to date with current app formatting.
-  if (metadata['version'] < appVersion) {
+  if (metadata['version'] < version) {
     
   }//e if version is out of date
 
